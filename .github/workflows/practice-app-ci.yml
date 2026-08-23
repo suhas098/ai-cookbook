@@ -1,0 +1,44 @@
+name: practice-app CI
+
+on:
+  push:
+    paths:
+      - "practice-app/**"
+      - ".github/workflows/practice-app-ci.yml"
+  pull_request:
+    paths:
+      - "practice-app/**"
+      - ".github/workflows/practice-app-ci.yml"
+
+defaults:
+  run:
+    working-directory: practice-app
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Test
+        run: pytest -v
+
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t practice-app .
